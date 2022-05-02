@@ -1,5 +1,6 @@
 package tests;
 
+import models.lombok.UsersDataClass;
 import models.lombok.SuccessRegister;
 import models.lombok.UnsuccessfulRegister;
 import org.junit.jupiter.api.Test;
@@ -44,7 +45,7 @@ public class ApiTests {
                 .then()
                 .log().all() // вывод в лог ответа
                 .statusCode(200)
-                .body(matchesJsonSchemaInClasspath("shemas/successRegister_response_jsone_shema.json"))
+                .body(matchesJsonSchemaInClasspath("shemas/successRegister_response_json_shema.json"))
                 .body("id", is(4))
                 .body("token", is("QpwL5tke4Pnpja7X4"));
 
@@ -80,6 +81,7 @@ public class ApiTests {
                 .log().status()
                 .log().body()
                 .statusCode(400)
+                .body(matchesJsonSchemaInClasspath("shemas/unsuccessfulRegister_response_json_shema.json"))
                 .body("error", is("Missing password"));
 
     }
@@ -100,14 +102,15 @@ public class ApiTests {
         }
          */
 
-        String createData = "{\"name\": \"morpheus\",\n" +
-                                " \"job\": \"leader\"}";
+        UsersDataClass usersDataClass = new UsersDataClass();
+        usersDataClass.setName("morpheus");
+        usersDataClass.setJob("leader");
 
         given()
                 .filter(withCustomTemplates())
                 .log().uri()
                 .log().body()
-                .body(createData)
+                .body(usersDataClass)
                 .contentType(JSON)
                 .when()
                 .post("https://reqres.in/api/users")
@@ -115,6 +118,7 @@ public class ApiTests {
                 .log().status()
                 .log().body()
                 .statusCode(201)
+                .body(matchesJsonSchemaInClasspath("shemas/successCreate_response_json_shema.json"))
                 .body("name", is("morpheus"))
                 .body("job", is("leader"));
 
@@ -136,14 +140,15 @@ public class ApiTests {
         }
          */
 
-        String updateData = "{\"name\": \"morpheus\",\n" +
-                " \"job\": \"zion resident\"}";
+        UsersDataClass usersDataClass = new UsersDataClass();
+        usersDataClass.setName("morpheus");
+        usersDataClass.setJob("zion resident");
 
         given()
                 .filter(withCustomTemplates())
                 .log().uri()
                 .log().body()
-                .body(updateData)
+                .body(usersDataClass)
                 .contentType(JSON)
                 .when()
                 .put("https://reqres.in/api/users/2")
@@ -151,6 +156,7 @@ public class ApiTests {
                 .log().status()
                 .log().body()
                 .statusCode(200)
+                .body(matchesJsonSchemaInClasspath("shemas/successPut_response_json_shema.json"))
                 .body("name", is("morpheus"))
                 .body("job", is("zion resident"));
 
@@ -170,10 +176,16 @@ public class ApiTests {
         {}
          */
 
+        UsersDataClass usersDataClass = new UsersDataClass();
+        usersDataClass.setName("morpheus");
+        usersDataClass.setJob("zion resident");
+
         given()
                 .filter(withCustomTemplates())
                 .log().uri()
                 .log().body()
+                .body(usersDataClass)
+                .contentType(JSON)
                 .when()
                 .get("https://reqres.in/api/unknown/23")
                 .then()
