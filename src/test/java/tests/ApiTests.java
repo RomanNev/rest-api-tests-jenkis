@@ -1,10 +1,12 @@
 package tests;
 
-import models.lombok.SuccessRegisterLombok;
+import models.lombok.SuccessRegister;
+import models.lombok.UnsuccessfulRegister;
 import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
+import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
 import static listeners.CustomAllureListener.withCustomTemplates;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -27,21 +29,22 @@ public class ApiTests {
          */
 
 
-        SuccessRegisterLombok successRegisterLombok = new SuccessRegisterLombok();
-        successRegisterLombok.setEmail("eve.holt@reqres.in");
-        successRegisterLombok.setPassword("pistol");
+        SuccessRegister successRegister = new SuccessRegister();
+        successRegister.setEmail("eve.holt@reqres.in");
+        successRegister.setPassword("pistol");
 
 
         given()
                 .filter(withCustomTemplates())
                 .log().all() // вывод в лог запроса
-                .body(successRegisterLombok)
+                .body(successRegister)
                 .contentType(JSON)
                 .when()
                 .post("https://reqres.in/api/register")
                 .then()
                 .log().all() // вывод в лог ответа
                 .statusCode(200)
+                .body(matchesJsonSchemaInClasspath("shemas/successRegister_response_jsone_shema.json"))
                 .body("id", is(4))
                 .body("token", is("QpwL5tke4Pnpja7X4"));
 
@@ -62,12 +65,14 @@ public class ApiTests {
         }
          */
 
-        String registerData = "{\"email\": \"sydney@fife\"}";
+        UnsuccessfulRegister unsuccessfulRegister = new UnsuccessfulRegister();
+        unsuccessfulRegister.setEmail("sydney@fife");
 
         given()
+                .filter(withCustomTemplates())
                 .log().uri()
                 .log().body()
-                .body(registerData)
+                .body(unsuccessfulRegister)
                 .contentType(JSON)
                 .when()
                 .post("https://reqres.in/api/register")
@@ -99,11 +104,16 @@ public class ApiTests {
                                 " \"job\": \"leader\"}";
 
         given()
+                .filter(withCustomTemplates())
+                .log().uri()
+                .log().body()
                 .body(createData)
                 .contentType(JSON)
                 .when()
                 .post("https://reqres.in/api/users")
                 .then()
+                .log().status()
+                .log().body()
                 .statusCode(201)
                 .body("name", is("morpheus"))
                 .body("job", is("leader"));
@@ -130,11 +140,16 @@ public class ApiTests {
                 " \"job\": \"zion resident\"}";
 
         given()
+                .filter(withCustomTemplates())
+                .log().uri()
+                .log().body()
                 .body(updateData)
                 .contentType(JSON)
                 .when()
                 .put("https://reqres.in/api/users/2")
                 .then()
+                .log().status()
+                .log().body()
                 .statusCode(200)
                 .body("name", is("morpheus"))
                 .body("job", is("zion resident"));
@@ -156,9 +171,14 @@ public class ApiTests {
          */
 
         given()
+                .filter(withCustomTemplates())
+                .log().uri()
+                .log().body()
                 .when()
                 .get("https://reqres.in/api/unknown/23")
                 .then()
+                .log().status()
+                .log().body()
                 .statusCode(404);
 
     }

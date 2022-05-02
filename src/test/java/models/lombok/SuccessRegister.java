@@ -3,7 +3,7 @@ package models.lombok;
 import lombok.Data;
 
 @Data
-public class SuccessRegisterLombok {
+public class SuccessRegister {
 
      /*
       {
