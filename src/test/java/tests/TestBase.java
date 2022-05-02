@@ -12,7 +12,7 @@ public class TestBase {
     static void beforeAll() {
         Configuration.baseUrl = URL;
         Configuration.browserSize = "1920x1080";
-        RestAssured.filters(new AllureRestAssured());
+        RestAssured.filters(new AllureRestAssured()); // будет использован в класах наследниках
 
     }
 }

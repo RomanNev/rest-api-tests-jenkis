@@ -1,5 +1,6 @@
 package tests;
 
+import models.lombok.VotingWithoutAuthorization;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.Cookie;
 
@@ -8,9 +9,10 @@ import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.open;
 import static com.codeborne.selenide.WebDriverRunner.getWebDriver;
 import static io.restassured.RestAssured.given;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.is;
 
-
+//с allure listeners
 public class DemoshopApiTest extends TestBase {
 
     @Test
@@ -38,12 +40,16 @@ public class DemoshopApiTest extends TestBase {
     void loginOutUserTest() {
         String authorizationCookie =
                 given()
+                        .log().uri()
+                        .log().body()
                         .contentType("application/x-www-form-urlencoded; charset=UTF-8")
                         .formParam("Email", "golubtestuser@test.com")
                         .formParam("Password", "golubtestuser1")
                         .when()
                         .post(URL + "login")
                         .then()
+                        .log().status()
+                        .log().body()
                         .statusCode(302)
                         .extract()
                         .cookie("NOPCOMMERCE.AUTH");
@@ -60,6 +66,8 @@ public class DemoshopApiTest extends TestBase {
     @Test
     void addItemWishListCardUnauthorizedUser() {
         given()
+                .log().uri()
+                .log().body()
                 .contentType("application/x-www-form-urlencoded; charset=UTF-8")
                 .body("giftcard_2.RecipientName=&" +
                         "giftcard_2.RecipientEmail=&" +
@@ -70,7 +78,8 @@ public class DemoshopApiTest extends TestBase {
                 .when()
                 .post("http://demowebshop.tricentis.com/addproducttocart/details/2/2")
                 .then()
-                .log().all()
+                .log().status()
+                .log().body()
                 .statusCode(200)
                 .body("success", is(false));
 
@@ -78,15 +87,23 @@ public class DemoshopApiTest extends TestBase {
 
     @Test
     void votingWithoutAuthorization() {
+
+        VotingWithoutAuthorization votingWithoutAuthorization =
         given()
+                .log().uri()
+                .log().body()
                 .contentType("application/x-www-form-urlencoded; charset=UTF-8")
                 .body("pollAnswerId=2")
                 .when()
                 .post("http://demowebshop.tricentis.com/poll/vote")
                 .then()
-                .log().all()
+                .log().status()
+                .log().body()
                 .statusCode(200)
-                .body("error", is("Only registered users can vote."));
+                //.body("error", is("Only registered users can vote."))
+                .extract().as(VotingWithoutAuthorization.class);
+
+        assertThat(votingWithoutAuthorization.getError()).isEqualTo("Only registered users can vote.");
 
     }
 }

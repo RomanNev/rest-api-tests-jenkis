@@ -12,6 +12,7 @@ import static listeners.CustomAllureListener.withCustomTemplates;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 
+//с кастомными listeners
 public class ApiTests {
     @Test
     void successRegister() {
