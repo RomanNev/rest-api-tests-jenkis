@@ -3,6 +3,8 @@ package tests;
 import models.lombok.UsersDataClass;
 import models.lombok.SuccessRegister;
 import models.lombok.UnsuccessfulRegister;
+import models.lombok.VotingWithoutAuthorization;
+import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
@@ -193,6 +195,52 @@ public class ApiTests {
                 .log().status()
                 .log().body()
                 .statusCode(404);
+
+    }
+
+    @Test
+    void addItemWishListCardUnauthorizedUser() {
+        given()
+                .filter(withCustomTemplates())
+                .log().uri()
+                .log().body()
+                .contentType("application/x-www-form-urlencoded; charset=UTF-8")
+                .body("giftcard_2.RecipientName=&" +
+                        "giftcard_2.RecipientEmail=&" +
+                        "giftcard_2.SenderName=&" +
+                        "giftcard_2.SenderEmail=&" +
+                        "giftcard_2.Message=&" +
+                        "addtocart_2.EnteredQuantity=1")
+                .when()
+                .post("http://demowebshop.tricentis.com/addproducttocart/details/2/2")
+                .then()
+                .log().status()
+                .log().body()
+                .statusCode(200)
+                .body("success", CoreMatchers.is(false));
+
+    }
+
+    @Test
+    void votingWithoutAuthorization() {
+
+        VotingWithoutAuthorization votingWithoutAuthorization =
+                given()
+                        .filter(withCustomTemplates())
+                        .log().uri()
+                        .log().body()
+                        .contentType("application/x-www-form-urlencoded; charset=UTF-8")
+                        .body("pollAnswerId=2")
+                        .when()
+                        .post("http://demowebshop.tricentis.com/poll/vote")
+                        .then()
+                        .log().status()
+                        .log().body()
+                        .statusCode(200)
+                        //.body("error", is("Only registered users can vote."))
+                        .extract().as(VotingWithoutAuthorization.class);
+
+        assertThat(votingWithoutAuthorization.getError()).isEqualTo("Only registered users can vote.");
 
     }
 }
